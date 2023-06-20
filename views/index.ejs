@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .full-height {
+        min-height: 90vh;
+      }
+      .chat-wrapper {
+        border: 2px solid black;
+        padding: 0 !important;
+      }
+      .chat {
+        height: 75px;
+      }
+      .chat img {
+        width: 70px;
+        height: 70px;
+      }
+     .chat{
+        border-top: 1px solid gray;
+        border-bottom: 1px solid gray;
+     }
+      .sender-name{
+        font-size: 24px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light align-top">
+      <a class="navbar-brand" href="#">Dialogues</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="#">Сообщения</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Друзья</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row full-height">
+        <div class="col-md-2">
+          <!-- Колонка с меню -->
+          <div class="list-group">
+            <a href="#" class="list-group-item list-group-item-action active"
+              >Сообщения</a
+            >
+            <a href="#" class="list-group-item list-group-item-action"
+              >Друзья</a
+            >
+            <!-- Добавьте дополнительные ссылки в меню, если необходимо -->
+          </div>
+        </div>
+        <div class="col-md-8 chat-wrapper">
+          <!-- Колонка с контейнером для чатов -->
+            <div class="chat-container">
+
+                <div class="container-fluid chat">
+                    <div class="row ">
+                        <div class="col-md-1 sender-col">
+                            <img src="tempphoto.png" />
+                        </div>
+                        <div class="col-md-11">
+                             <div class="sender-name">test-name</div>
+                              <div class="sender-text">text</div>
+                        </div>
+                    </div>
+                </div>
+              <% chats.forEach(function(chat) { %>
+   <div class="container-fluid chat">
+       <div class="row">
+           <div class="col-md-1 sender-col">
+               <img src="tempphoto.png" />
+           </div>
+           <div class="col-md-11">
+               <div class="sender-name"><%= chat.name %></div>
+               <div class="sender-text">sample</div>
+           </div>
+       </div>
+   </div>
+<% }); %>
+            </div>
+        </div>
+        </div>
+        <div class="col-md-2">
+          <!-- Пустая колонка -->
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  </body>
+</html>
