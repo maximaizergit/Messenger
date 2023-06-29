@@ -62,57 +62,60 @@
 
     <div class="container-fluid">
       <div class="row full-height">
+         <div class="col-md-2">
+          <!-- Пустая колонка -->
+        </div>
         <div class="col-md-2">
           <!-- Колонка с меню -->
           <div class="list-group">
-            <a href="#" class="list-group-item list-group-item-action active"
-              >Сообщения</a
-            >
-            <a href="#" class="list-group-item list-group-item-action"
-              >Друзья</a
-            >
-            <!-- Добавьте дополнительные ссылки в меню, если необходимо -->
+            <a href="/" class="list-group-item list-group-item-action active"
+              >Сообщения</a >
+            <a href="/friends" class="list-group-item list-group-item-action"
+              >Друзья</a >
           </div>
         </div>
-        <div class="col-md-8 chat-wrapper">
+        <div class="col-md-5 chat-wrapper">
           <!-- Колонка с контейнером для чатов -->
             <div class="chat-container">
-
-                <div class="container-fluid chat">
-                    <div class="row ">
-                        <div class="col-md-1 sender-col">
-                            <img src="tempphoto.png" />
-                        </div>
-                        <div class="col-md-11">
-                             <div class="sender-name">test-name</div>
-                              <div class="sender-text">text</div>
-                        </div>
-                    </div>
-                </div>
               <% chats.forEach(function(chat) { %>
    <div class="container-fluid chat">
-       <div class="row">
-           <div class="col-md-1 sender-col">
+      
+      <a href="/chat/<%= chat.cId %>"><div class="row">
+           <div class="col-md-2 sender-col min-vw-20">
                <img src="tempphoto.png" />
            </div>
-           <div class="col-md-11">
+           <div class="col-md-10">
                <div class="sender-name"><%= chat.name %></div>
-               <div class="sender-text">sample</div>
+               <div class="sender-text"  data-chatid="<%= chat.cId %>"><%= chat.lastMsg %></div>
            </div>
-       </div>
+       </div></a>
    </div>
 <% }); %>
             </div>
         </div>
-        </div>
-        <div class="col-md-2">
+         <div class="col-md-3">
           <!-- Пустая колонка -->
         </div>
+        </div>
+       
       </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+     <script>
+     // Подключение к серверу Socket.IO
+      const socket = io();
+     socket.on("notification", (message) => {
+      const senderText = document.querySelector(`[data-chatid="${message.chatId}"]`);
+
+      // Замена содержимого на новое сообщение
+       if (senderText) {
+       senderText.textContent = message.message;
+      }
+     });
+    </script>
   </body>
 </html>

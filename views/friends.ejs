@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .full-height {
+        min-height: 90vh;
+      }
+      .chat-wrapper {
+        border: 2px solid black;
+        padding: 0 !important;
+      }
+      .add-friends-wrapper {
+        border: 2px solid black;
+        padding: 0 !important;
+        border-left: 0;
+        max-height: 60vh;
+        min-height: 0vh;
+        margin-bottom: 10px;
+      }
+      .chat {
+        height: 75px;
+      }
+      .chat img {
+        width: 70px;
+        height: 70px;
+      }
+      .chat {
+        border-top: 1px solid gray;
+        border-bottom: 1px solid gray;
+        height: max-content;
+      }
+      .sender-name {
+        font-size: 24px;
+      }
+      .menu-item{
+          flex-shrink: 0;
+          padding: 10px;
+      }
+      .side-menu{
+        height: min-content;
+      }
+    </style>
+  </head>
+
+  <body>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light align-top">
+      <a class="navbar-brand" href="#">Dialogues</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="#">Сообщения</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Друзья</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-2">
+          <!-- Пустая колонка -->
+        </div>
+        <div class="col-md-2 side-menu">
+          <!-- Колонка с меню -->
+          <div class="list-group">
+            <a href="/" class="list-group-item list-group-item-action"
+              >Сообщения</a
+            >
+            <a href="#" class="list-group-item list-group-item-action active"
+              >Друзья</a
+            >
+            <!-- Добавьте дополнительные ссылки в меню, если необходимо -->
+          </div>
+        </div>
+        <div class="col-md-4 chat-wrapper full-height">
+          <!-- Колонка с контейнером для чатов -->
+       
+          <div class="chat-container">
+             <div class=" add-friends-wrapper">
+<div class="message-input d-flex align-items-center">
+                <div class="menu-item">Добавить друга</div>
+            <input
+              id="search-input"
+              type="text"
+              class="form-control mr-2"
+              placeholder="Введите имя пользователя"
+            />
+          <button id="search-button" class="btn btn-primary">Поиск</button>
+         
+        </div>
+         <div class="row mt-2">
+             <div class="col-1"></div>
+    <div class="col-5">
+      <button id="requests-button" class="btn btn-primary btn-block">Заявки</button>
+    </div>
+    <div class="col-5">
+      <button id="my-requests-button" class="btn btn-primary btn-block">Мои запросы</button>
+    </div>
+        <div class="col-1"></div>
+  </div>
+            
+          </div>
+             
+            <% friends.forEach(function(friend) { %>
+            <div class="container-fluid chat">
+              <div class="row">
+                <div class="col-md-2 sender-col min-vw-20">
+                  <img src="tempphoto.png" />
+                </div>
+                <div class="col-md-10">
+                  <div class="sender-name"><%= friend.name %></div>
+                  <a href="chat/<%= friend.id %>">
+                  <button
+                    class="btn btn-primary"
+                    data-friend-id="<%= friend.id %>"
+                  >
+                    Написать
+                  </button>
+                  </a>
+                   
+                </div>
+              </div>
+            </div>
+            <% }); %>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+         
+       
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // Подключение к серверу Socket.IO
+      const socket = io();
+      socket.on("notification", (message) => {});
+      const resultsContainer = document.querySelector(".add-friends-wrapper");
+      $(document).ready(function () {
+        // Обработка клика на кнопку "Отправить"
+        $("#search-button").click(function () {
+         
+          var name = $("#search-input").val();
+          console.log('req'); 
+           socket.emit("searchUser", name);
+
+        });
+
+     $("#requests-button").click(function () {
+           socket.emit("getRequests");
+        });
+
+          $("#my-requests-button").click(function () {
+           socket.emit("getSentRequests");
+        });
+
+
+        socket.on("friendRequests", (requests) => {
+// Удаление существующих контейнеров с указанным идентификатором
+  const containerId = "search-results";
+  const existingContainers = document.querySelectorAll(`#${containerId}`);
+  
+
+existingContainers.forEach((container) => {
+    container.remove();
+  });
+  requests.forEach((user) => {
+    console.log(requests);
+    const container = document.createElement("div");
+    container.className = "container-fluid chat";
+    container.id = containerId;
+
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const senderCol = document.createElement("div");
+    senderCol.className = "col-md-2 sender-col min-vw-20";
+
+    const img = document.createElement("img");
+    img.src = "tempphoto.png";
+
+    const col = document.createElement("div");
+    col.className = "col-md-10";
+
+    const senderName = document.createElement("div");
+    senderName.className = "sender-name";
+    senderName.textContent = user.name;
+    console.log(user.Name)
+
+    const addButton = document.createElement("a");
+    addButton.href = ``;
+    addButton.className = "btn btn-primary";
+    addButton.textContent = "Добавить в друзья";
+    addButton.setAttribute("data-friend-id", user.id);
+
+    const writeButton = document.createElement("a");
+    writeButton.href = `/chat/${user.id}`;
+    writeButton.className = "btn btn-primary";
+    writeButton.textContent = "Написать";
+
+    col.appendChild(senderName);
+    col.appendChild(addButton);
+    col.appendChild(writeButton);
+
+    senderCol.appendChild(img);
+
+    row.appendChild(senderCol);
+    row.appendChild(col);
+
+    container.appendChild(row);
+
+    resultsContainer.appendChild(container);
+        });
+
+         // Добавить обработчик события click к каждой кнопке
+  const addFriendButtons = document.querySelectorAll(`#${containerId} .btn-primary[data-friend-id]`);
+  addFriendButtons.forEach((button) => {
+    button.addEventListener("click", function (event) {
+      event.preventDefault();
+      // Получить идентификатор друга из атрибута data-friend-id
+      const friendId = this.getAttribute("data-friend-id");
+      console.log(friendId);
+
+      // Выполнить действия, которые вам нужны при клике на кнопку
+      // Например, отправить запрос на сервер для добавления друга
+
+      // Пример запроса на сервер с использованием jQuery AJAX
+      $.ajax({
+        
+        url: `/add-friend/${friendId}`,
+        method: "POST",
+        // Дополнительные параметры запроса, если необходимо
+        success: function (response) {
+          // Обработать успешный ответ от сервера
+          console.log("Success");
+        },
+        error: function (error) {
+          // Обработать ошибку, если есть
+          console.log("Error:", error);
+        },
+      });
+    });
+  });
+   
+  
+      });
+
+
+socket.on("friendRequestsSent", (requests) => {
+// Удаление существующих контейнеров с указанным идентификатором
+  const containerId = "search-results";
+  const existingContainers = document.querySelectorAll(`#${containerId}`);
+  
+
+existingContainers.forEach((container) => {
+    container.remove();
+  });
+  requests.forEach((user) => {
+    console.log(requests);
+    const container = document.createElement("div");
+    container.className = "container-fluid chat";
+    container.id = containerId;
+
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const senderCol = document.createElement("div");
+    senderCol.className = "col-md-2 sender-col min-vw-20";
+
+    const img = document.createElement("img");
+    img.src = "tempphoto.png";
+
+    const col = document.createElement("div");
+    col.className = "col-md-10";
+
+    const senderName = document.createElement("div");
+    senderName.className = "sender-name";
+    senderName.textContent = user.name;
+    console.log(user.Name)
+
+    const addButton = document.createElement("a");
+    addButton.href = ``;
+    addButton.className = "btn btn-primary";
+    addButton.textContent = "Добавить в друзья";
+    addButton.setAttribute("data-friend-id", user.id);
+
+    const writeButton = document.createElement("a");
+    writeButton.href = `/chat/${user.id}`;
+    writeButton.className = "btn btn-primary";
+    writeButton.textContent = "Написать";
+
+    col.appendChild(senderName);
+    col.appendChild(addButton);
+    col.appendChild(writeButton);
+
+    senderCol.appendChild(img);
+
+    row.appendChild(senderCol);
+    row.appendChild(col);
+
+    container.appendChild(row);
+
+    resultsContainer.appendChild(container);
+        });
+
+         // Добавить обработчик события click к каждой кнопке
+  const addFriendButtons = document.querySelectorAll(`#${containerId} .btn-primary[data-friend-id]`);
+  addFriendButtons.forEach((button) => {
+    button.addEventListener("click", function (event) {
+      event.preventDefault();
+      // Получить идентификатор друга из атрибута data-friend-id
+      const friendId = this.getAttribute("data-friend-id");
+      console.log(friendId);
+
+      // Выполнить действия, которые вам нужны при клике на кнопку
+      // Например, отправить запрос на сервер для добавления друга
+
+      // Пример запроса на сервер с использованием jQuery AJAX
+      $.ajax({
+        
+        url: `/add-friend/${friendId}`,
+        method: "POST",
+        // Дополнительные параметры запроса, если необходимо
+        success: function (response) {
+          // Обработать успешный ответ от сервера
+          console.log("Success");
+        },
+        error: function (error) {
+          // Обработать ошибку, если есть
+          console.log("Error:", error);
+        },
+      });
+    });
+  });
+   
+  
+      });
+
+
+ socket.on("searchResult", (userNames) => {
+  console.log('res');
+  const containerId = "search-results";
+
+  // Удаление существующих контейнеров с указанным идентификатором
+  const existingContainers = document.querySelectorAll(`#${containerId}`);
+  existingContainers.forEach((container) => {
+    container.remove();
+  });
+
+  userNames.forEach((user) => {
+    const container = document.createElement("div");
+    container.className = "container-fluid chat";
+    container.id = containerId;
+
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const senderCol = document.createElement("div");
+    senderCol.className = "col-md-2 sender-col min-vw-20";
+
+    const img = document.createElement("img");
+    img.src = "tempphoto.png";
+
+    const col = document.createElement("div");
+    col.className = "col-md-10";
+
+    const senderName = document.createElement("div");
+    senderName.className = "sender-name";
+    senderName.textContent = user.name;
+
+    const addButton = document.createElement("a");
+    
+    addButton.className = "btn btn-primary";
+
+    addButton.textContent = "Добавить в друзья";
+    addButton.setAttribute("data-friend-id", user.id);
+
+    const writeButton = document.createElement("a");
+    writeButton.href = `/chat/${user.id}`;
+    writeButton.className = "btn btn-primary";
+    writeButton.textContent = "Написать";
+
+    col.appendChild(senderName);
+    col.appendChild(addButton);
+    col.appendChild(writeButton);
+
+    senderCol.appendChild(img);
+
+    row.appendChild(senderCol);
+    row.appendChild(col);
+
+    container.appendChild(row);
+
+    resultsContainer.appendChild(container);
+  });
+  // Добавить обработчик события click к каждой кнопке
+  const addFriendButtons = document.querySelectorAll(`#${containerId} .btn-primary[data-friend-id]`);
+  addFriendButtons.forEach((button) => {
+    button.addEventListener("click", function (event) {
+      event.preventDefault();
+      // Получить идентификатор друга из атрибута data-friend-id
+      const friendId = this.getAttribute("data-friend-id");
+      console.log(friendId);
+
+      // Выполнить действия, которые вам нужны при клике на кнопку
+      // Например, отправить запрос на сервер для добавления друга
+
+      // Пример запроса на сервер с использованием jQuery AJAX
+      $.ajax({
+        
+        url: `/add-friend/${friendId}`,
+        method: "POST",
+        // Дополнительные параметры запроса, если необходимо
+        success: function (response) {
+          // Обработать успешный ответ от сервера
+          console.log("Success");
+        },
+        error: function (error) {
+          // Обработать ошибку, если есть
+          console.log("Error:", error);
+        },
+      });
+    });
+  });
+ });
+ 
+ 
+});
+
+
+
+
+      
+    </script>
+  </body>
+</html>

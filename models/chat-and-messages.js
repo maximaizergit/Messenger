@@ -23,9 +23,13 @@ const messageSchema = new Schema(
       type: String,
       required: true,
     },
-    sender: {
+    senderId: {
       type: Schema.Types.ObjectId,
       ref: "User", // Ссылка на схему "Пользователь"
+    },
+    senderName: {
+      type: String,
+      required: true,
     },
     chat: {
       type: Schema.Types.ObjectId,

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .chat-wrapper {
+        border: 2px solid black;
+        padding: 0 !important;
+        height: 80vh;
+        height: 80vh;
+      }
+      .chat {
+        height: 75px;
+      }
+      .chat img {
+        width: 70px;
+        height: 70px;
+      }
+      .chat {
+        border-top: 1px solid gray;
+        border-bottom: 1px solid gray;
+      }
+      .sender-name {
+        font-size: 24px;
+      }
+      .row {
+        max-height: 90%;
+      }
+      .chat-container {
+        max-height: 100%; /* Задайте желаемую максимальную высоту контейнера */
+        overflow-y: auto; /* Включить вертикальную прокрутку, если контент превышает высоту контейнера */
+      }
+      .input-block {
+        padding: 0 !important;
+        min-height: 40px;
+        max-height: 5vh;
+      }
+      .chat-container::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .chat-container::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+      }
+
+      .chat-container::-webkit-scrollbar-thumb {
+        background-color: #888;
+      }
+
+      .chat-container::-webkit-scrollbar-thumb:hover {
+        background-color: #555;
+      }
+    </style>
+  </head>
+
+  <body>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light align-top">
+      <a class="navbar-brand" href="#">Dialogues</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="#">Сообщения</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Друзья</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-2">
+          <!-- Пустая колонка -->
+        </div>
+        <div class="col-md-2">
+          <!-- Колонка с меню -->
+          <div class="list-group">
+            <a href="/" class="list-group-item list-group-item-action active"
+              >Сообщения</a
+            >
+            <a href="/friends" class="list-group-item list-group-item-action"
+              >Друзья</a
+            >
+            <!-- Добавьте дополнительные ссылки в меню, если необходимо -->
+          </div>
+        </div>
+        <div class="col-md-5 chat-wrapper">
+          <!-- Колонка с контейнером для чатов -->
+          <div class="chat-container" id="chat-container">
+            <% messages.forEach(function(message) { %>
+            <div class="message">
+              <div class="sender"><%= message.senderName %></div>
+              <div class="content"><%= message.text %></div>
+            </div>
+            <% }); %>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <!-- Пустая колонка -->
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <!-- Пустая колонка -->
+        </div>
+        <div class="col-md-5 input-block">
+          <div class="message-input d-flex align-items-center">
+            <input
+              id="message-input"
+              type="text"
+              class="form-control mr-2"
+              placeholder="Введите сообщение"
+            />
+            <button id="send-button" class="btn btn-primary">Отправить</button>
+            <input type="hidden" id="current-user-id" value="<%= userId %>" />
+            <input
+              type="hidden"
+              id="current-user-name"
+              value="<%= userName %>"
+            />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <!-- Пустая колонка -->
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      $(document).ready(function () {
+        // Обработка клика на кнопку "Отправить"
+        $("#send-button").click(function () {
+          // Получение введенного сообщения из инпута
+          var message = $("#message-input").val();
+
+          // Отправка сообщения на сервер или выполнение необходимых действий
+          sendMessage(message, userId);
+
+          // Очистка инпута после отправки сообщения
+          $("#message-input").val("");
+        });
+      });
+      // Подключение к серверу Socket.IO
+      const socket = io();
+      var userId = $("#current-user-id").val();
+      var userName = $("#current-user-name").val();
+      var chatId = window.location.pathname.split("/chat/")[1];
+      // Отправка сообщения
+      function sendMessage(message) {
+        socket.emit("chatMessage", { chatId, message, userId, userName });
+      }
+
+      // Обработка получения нового сообщения
+      socket.on("message", (message) => {
+        // Обработка нового сообщения, например, отображение его на экране
+        const newMessageElement = document.createElement("div");
+        newMessageElement.classList.add("message");
+        newMessageElement.innerHTML = `
+    <div class="sender">${message.userName}</div>
+    <div class="content">${message.message}</div>
+  `;
+
+        // Поиск контейнера чата по его идентификатору
+        const chatContainer = document.getElementById("chat-container");
+
+        // Добавление нового элемента сообщения в контейнер чата
+        chatContainer.appendChild(newMessageElement);
+        console.log("New message:", message);
+      });
+
+      socket.emit("joinRoom", chatId);
+
+      const chatContainer = document.getElementById("chat-container");
+
+      // Пролистывание содержимого вниз
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    </script>
+  </body>
+</html>
