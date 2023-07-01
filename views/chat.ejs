@@ -52,6 +52,72 @@
       .chat-container::-webkit-scrollbar-thumb:hover {
         background-color: #555;
       }
+
+      .message {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+      }
+
+      .message.left {
+        align-items: flex-start;
+        margin-left: 10px;
+      }
+
+      .message.right {
+        align-items: flex-end;
+        margin-right: 10px;
+      }
+
+      .sender {
+        font-weight: bold;
+      }
+
+      .content {
+        background-color: #f2f2f2;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 5px;
+        max-width: 60%;
+        min-width: 10%;
+        word-wrap: break-word;
+      }
+      .left {
+        opacity: 0;
+        animation: slideInRight 0.3s ease-in-out forwards;
+      }
+
+      @keyframes slideInLeft {
+        0% {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      .right {
+        opacity: 0;
+        animation: slideInLeft 0.3s ease-in-out forwards;
+      }
+
+      @keyframes slideInRight {
+        0% {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      @media screen and (max-width: 1150px) {
+        .side-block {
+          display: none;
+        }
+      }
     </style>
   </head>
 
@@ -88,10 +154,10 @@
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-2 side-block">
           <!-- Пустая колонка -->
         </div>
-        <div class="col-md-2">
+        <div class="col-md-2 side-block">
           <!-- Колонка с меню -->
           <div class="list-group">
             <a href="/" class="list-group-item list-group-item-action active"
@@ -107,19 +173,23 @@
           <!-- Колонка с контейнером для чатов -->
           <div class="chat-container" id="chat-container">
             <% messages.forEach(function(message) { %>
-            <div class="message">
-              <div class="sender"><%= message.senderName %></div>
-              <div class="content"><%= message.text %></div>
+            <div
+              class="message <%= message.senderId.toString() === userId ? 'right' : 'left' %>"
+            >
+              <div class="content">
+                <div class="sender"><%= message.senderName %></div>
+                <%= message.text %>
+              </div>
             </div>
             <% }); %>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 side-block">
           <!-- Пустая колонка -->
         </div>
       </div>
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-4 side-block">
           <!-- Пустая колонка -->
         </div>
         <div class="col-md-5 input-block">
@@ -139,7 +209,7 @@
             />
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 side-block">
           <!-- Пустая колонка -->
         </div>
       </div>
@@ -166,6 +236,7 @@
       // Подключение к серверу Socket.IO
       const socket = io();
       var userId = $("#current-user-id").val();
+
       var userName = $("#current-user-name").val();
       var chatId = window.location.pathname.split("/chat/")[1];
       // Отправка сообщения
@@ -175,19 +246,39 @@
 
       // Обработка получения нового сообщения
       socket.on("message", (message) => {
-        // Обработка нового сообщения, например, отображение его на экране
-        const newMessageElement = document.createElement("div");
-        newMessageElement.classList.add("message");
-        newMessageElement.innerHTML = `
-    <div class="sender">${message.userName}</div>
-    <div class="content">${message.message}</div>
-  `;
+        // Создание контейнера сообщения
+        const messageContainer = document.createElement("div");
+        messageContainer.classList.add("message");
+
+        messageContainer.classList.add(
+          message.userId === userId ? "right" : "left"
+        );
+        console.log(userId + "///" + message.senderId);
+        // Создание блока облачка с именем отправителя
+        const senderContainer = document.createElement("div");
+        senderContainer.classList.add("sender");
+        senderContainer.textContent = message.userName;
+
+        // Создание блока облачка с содержимым сообщения
+        const contentContainer = document.createElement("div");
+        const text = document.createElement("div");
+        text.textContent = message.message;
+        contentContainer.classList.add("content");
+        contentContainer.appendChild(senderContainer);
+        contentContainer.appendChild(text);
+
+        // Добавление блоков облачков в контейнер сообщения
+
+        messageContainer.appendChild(contentContainer);
 
         // Поиск контейнера чата по его идентификатору
         const chatContainer = document.getElementById("chat-container");
 
-        // Добавление нового элемента сообщения в контейнер чата
-        chatContainer.appendChild(newMessageElement);
+        // Добавление контейнера сообщения в контейнер чата
+        chatContainer.appendChild(messageContainer);
+
+        // Прокрутка контейнера чата вниз
+        chatContainer.scrollTop = chatContainer.scrollHeight;
         console.log("New message:", message);
       });
 
@@ -197,6 +288,25 @@
 
       // Пролистывание содержимого вниз
       chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      const chatWrapper = document.querySelector(".chat-wrapper");
+      const mediaQuery = window.matchMedia("(max-width: 1150px)");
+      const inputBlock = window.querySelector(".input-block");
+      function handleMediaQuery(event) {
+        if (event.matches) {
+          chatWrapper.classList.remove("col-md-5");
+          chatWrapper.classList.add("col-md-12");
+          inputBlock.classList.remove("col-md-5");
+          inputBlock.classList.add("col-md-12");
+        } else {
+          chatWrapper.classList.remove("col-md-12");
+          chatWrapper.classList.add("col-md-5");
+          inputBlock.classList.remove("col-md-5");
+          inputBlock.classList.add("col-md-12");
+        }
+      }
+      mediaQuery.addEventListener("change", handleMediaQuery);
+      handleMediaQuery(mediaQuery);
     </script>
   </body>
 </html>

@@ -154,14 +154,21 @@ app.get("/chat/:id", async (req, res) => {
       const chat = await Chat.findById(chatId);
       if (chat) {
         console.log("exist");
-        // Получение сообщений из выбранного чата
-        const messages = await Message.find({ chat: chatId });
+        // Проверка, является ли текущий пользователь участником чата
+        const isParticipant = chat.participants.includes(userId);
 
-        const user = await User.findOne({ _id: userId });
-        const userName = user.Name;
-        console.log(userName);
-        // Передача сообщений на страницу messages.ejs
-        res.render("chat", { messages, userId, userName });
+        if (isParticipant) {
+          // Получение сообщений из выбранного чата
+          const messages = await Message.find({ chat: chatId });
+
+          const user = await User.findOne({ _id: userId });
+          const userName = user.Name;
+          console.log(userName);
+          // Передача сообщений на страницу messages.ejs
+          res.render("chat", { messages, userId, userName });
+        } else {
+          res.redirect("/");
+        }
       } else {
         console.log("notexist");
         const currentUser = await User.findById(req.session.userid);
@@ -453,7 +460,7 @@ io.on("connection", function (socket) {
       senderName: message.userName,
       chat: message.chatId,
     });
-
+    console.log("test " + message.userId);
     // Сохраните сообщение в базу данных
     await newMessage.save().catch((error) => {
       console.error(error);

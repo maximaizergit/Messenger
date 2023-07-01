@@ -22,10 +22,56 @@
      .chat{
         border-top: 1px solid gray;
         border-bottom: 1px solid gray;
-     }
+      }
       .sender-name{
         font-size: 24px;
       }
+      @media screen and (max-width: 1150px) {
+        .side-block{
+           display: none;
+      }
+      }
+      .grid-block{
+      display: grid;
+      grid-template-columns: 90px auto;
+      grid-template-rows: auto auto;
+ 
+      min-height: 70px; 
+      overflow: hidden;
+      }
+      .profile-pic{
+      grid-column: 1 ; 
+      grid-row: 1/ span 2;
+ 
+      display: flex;
+      align-items: center;
+  
+      justify-content: center;
+      }
+      .profile-pic img{
+      width: 70px;
+      height: 70px;
+      }
+      .username{
+      align-items: left;
+      grid-column: 2;
+      grid-row:1;
+    
+        color: black;
+  font-weight: normal;
+      }
+     .chat-container a:hover {
+  text-decoration: none!important;
+}
+      .text{
+      grid-column: 2;
+      grid-row:2;
+      
+       color: black;
+  font-weight: normal;
+      }
+    
+    
     </style>
   </head>
 
@@ -36,7 +82,7 @@
     />
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light align-top">
-      <a class="navbar-brand" href="#">Dialogues</a>
+      <a class="navbar-brand" href="#">NovaChat</a>
       <button
         class="navbar-toggler"
         type="button"
@@ -51,10 +97,10 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link" href="#">Сообщения</a>
+            <a class="nav-link" href="/">Сообщения</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Друзья</a>
+            <a class="nav-link" href="/friends">Друзья</a>
           </li>
         </ul>
       </div>
@@ -62,10 +108,10 @@
 
     <div class="container-fluid">
       <div class="row full-height">
-         <div class="col-md-2">
+         <div class="col-md-2 side-block">
           <!-- Пустая колонка -->
         </div>
-        <div class="col-md-2">
+        <div class="col-md-2 side-block">
           <!-- Колонка с меню -->
           <div class="list-group">
             <a href="/" class="list-group-item list-group-item-action active"
@@ -78,22 +124,30 @@
           <!-- Колонка с контейнером для чатов -->
             <div class="chat-container">
               <% chats.forEach(function(chat) { %>
+                  <a href="/chat/<%= chat.cId %>">
    <div class="container-fluid chat">
-      
-      <a href="/chat/<%= chat.cId %>"><div class="row">
-           <div class="col-md-2 sender-col min-vw-20">
-               <img src="tempphoto.png" />
-           </div>
-           <div class="col-md-10">
-               <div class="sender-name"><%= chat.name %></div>
-               <div class="sender-text"  data-chatid="<%= chat.cId %>"><%= chat.lastMsg %></div>
-           </div>
-       </div></a>
-   </div>
-<% }); %>
+              <div class="grid-block">
+              <div class="profile-pic">  <img src="tempphoto.png" /></div>
+             
+                <div class="username"><%= chat.name %></div>
+                
+             
+              <div class="text">
+               
+                  
+                <div class="sender-text"  data-chatid="<%= chat.cId %>"><%= chat.lastMsg; %></div>
+             
+               
+              </div>
+            </div>
+            </div>
+            </a>
+            <% }); %>
+       
+          
             </div>
         </div>
-         <div class="col-md-3">
+         <div class="col-md-3 side-block">
           <!-- Пустая колонка -->
         </div>
         </div>
@@ -107,15 +161,32 @@
     <script src="/socket.io/socket.io.js"></script>
      <script>
      // Подключение к серверу Socket.IO
-      const socket = io();
-     socket.on("notification", (message) => {
-      const senderText = document.querySelector(`[data-chatid="${message.chatId}"]`);
+    const socket = io();
+    socket.on("notification", (message) => {
+    const senderText = document.querySelector(`[data-chatid="${message.chatId}"]`);
 
-      // Замена содержимого на новое сообщение
-       if (senderText) {
-       senderText.textContent = message.message;
-      }
-     });
+    // Замена содержимого на новое сообщение
+    if (senderText) {
+     
+        senderText.textContent = message.message;
+   
+    }
+    });
+
+    const chatWrapper = document.querySelector('.chat-wrapper');
+    const mediaQuery = window.matchMedia('(max-width: 1150px)');
+
+    function handleMediaQuery(event) {
+      if (event.matches) {
+        chatWrapper.classList.remove('col-md-5');
+        chatWrapper.classList.add('col-md-12');
+      } else {
+        chatWrapper.classList.remove('col-md-12');
+        chatWrapper.classList.add('col-md-5');
+     }
+    }
+    mediaQuery.addEventListener('change', handleMediaQuery);
+    handleMediaQuery(mediaQuery);
     </script>
   </body>
 </html>

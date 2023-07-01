@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Друзья</title>
     <style>
       .full-height {
         min-height: 90vh;
@@ -13,16 +13,20 @@
         padding: 0 !important;
       }
       .add-friends-wrapper {
-        border: 2px solid black;
+        border-bottom: 2px solid black;
         padding: 0 !important;
-        border-left: 0;
+     
         max-height: 60vh;
         min-height: 0vh;
-        margin-bottom: 10px;
+        margin-bottom: 0px;
+        overflow:auto;
+        width: 100%;
+        overflow-x: hidden;
       }
       .chat {
         height: 75px;
       }
+     
       .chat img {
         width: 70px;
         height: 70px;
@@ -42,6 +46,57 @@
       .side-menu{
         height: min-content;
       }
+     @media screen and (max-width: 1150px) {
+  .side-block{
+   
+    display: none;
+  }
+  .add-friends-wrapper{
+    border-left: 0;
+    border-right: 0;
+  }
+  .chat-wrapper{
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+}
+
+
+
+  .grid-block{
+     display: grid;
+  grid-template-columns: 90px auto;
+  grid-template-rows: auto auto;
+ 
+  min-height: 70px; 
+  overflow: hidden;
+  }
+  .profile-pic{
+    grid-column: 1 ; 
+  grid-row: 1/ span 2;
+ 
+    display: flex;
+  align-items: center;
+  
+  justify-content: center;
+  }
+  .profile-pic img{
+     width: 70px;
+  height: 70px;
+  }
+  .username{
+    align-items: left;
+    grid-column: 2;
+  grid-row:1;
+  }
+  .buttons-wrapper{
+    grid-column: 2;
+  grid-row:2;
+  }
+  
+
     </style>
   </head>
 
@@ -52,7 +107,7 @@
     />
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light align-top">
-      <a class="navbar-brand" href="#">Dialogues</a>
+      <a class="navbar-brand" href="#">NovaChat</a>
       <button
         class="navbar-toggler"
         type="button"
@@ -67,10 +122,10 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link" href="#">Сообщения</a>
+            <a class="nav-link" href="/">Сообщения</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Друзья</a>
+            <a class="nav-link" href="/friends">Друзья</a>
           </li>
         </ul>
       </div>
@@ -78,10 +133,10 @@
 
     <div class="container-fluid">
       <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-2 side-block">
           <!-- Пустая колонка -->
         </div>
-        <div class="col-md-2 side-menu">
+        <div class="col-md-2 side-menu side-block">
           <!-- Колонка с меню -->
           <div class="list-group">
             <a href="/" class="list-group-item list-group-item-action"
@@ -110,43 +165,46 @@
          
         </div>
          <div class="row mt-2">
-             <div class="col-1"></div>
-    <div class="col-5">
+
+           <div class="col-1 p-0"></div>   
+    <div class="col-3 p-1">
       <button id="requests-button" class="btn btn-primary btn-block">Заявки</button>
     </div>
-    <div class="col-5">
+    <div class="col-5 p-1">
       <button id="my-requests-button" class="btn btn-primary btn-block">Мои запросы</button>
     </div>
-        <div class="col-1"></div>
+    <div class="col-2 p-1">
+      <button id="close-button" class="btn btn-danger btn-block">X</button>
+    </div>
+    <div class="col-1 p-0"></div> 
+        
   </div>
             
           </div>
              
             <% friends.forEach(function(friend) { %>
             <div class="container-fluid chat">
-              <div class="row">
-                <div class="col-md-2 sender-col min-vw-20">
-                  <img src="tempphoto.png" />
-                </div>
-                <div class="col-md-10">
-                  <div class="sender-name"><%= friend.name %></div>
-                  <a href="chat/<%= friend.id %>">
+              <div class="grid-block">
+              <div class="profile-pic">  <img src="tempphoto.png" /></div>
+              <div class="username"><%= friend.name %></div>
+              <div class="buttons-wrapper">
+                <a href="chat/<%= friend.id %>">
                   <button
                     class="btn btn-primary"
                     data-friend-id="<%= friend.id %>"
                   >
                     Написать
                   </button>
-                  </a>
-                   
-                </div>
+                </a>
               </div>
             </div>
+            </div>
             <% }); %>
+            
           </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-3 side-block">
          
        
       </div>
@@ -158,6 +216,23 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
+
+      const chatWrapper = document.querySelector('.chat-wrapper');
+const mediaQuery = window.matchMedia('(max-width: 1150px)');
+
+function handleMediaQuery(event) {
+  if (event.matches) {
+    chatWrapper.classList.remove('col-md-4');
+    chatWrapper.classList.add('col-md-12');
+  } else {
+    chatWrapper.classList.remove('col-md-12');
+    chatWrapper.classList.add('col-md-4');
+  }
+}
+
+mediaQuery.addEventListener('change', handleMediaQuery);
+handleMediaQuery(mediaQuery);
+
       // Подключение к серверу Socket.IO
       const socket = io();
       socket.on("notification", (message) => {});
@@ -179,7 +254,15 @@
           $("#my-requests-button").click(function () {
            socket.emit("getSentRequests");
         });
+      $("#close-button").click(function () {
+       const containerId = "search-results";
+  const existingContainers = document.querySelectorAll(`#${containerId}`);
+  
 
+existingContainers.forEach((container) => {
+    container.remove();
+  });
+        });
 
         socket.on("friendRequests", (requests) => {
 // Удаление существующих контейнеров с указанным идентификатором
@@ -191,51 +274,44 @@ existingContainers.forEach((container) => {
     container.remove();
   });
   requests.forEach((user) => {
-    console.log(requests);
-    const container = document.createElement("div");
-    container.className = "container-fluid chat";
-    container.id = containerId;
+    const container = document.createElement('div');
+  container.className = 'container-fluid chat';
+container.id = containerId;
+  const gridBlock = document.createElement('div');
+  gridBlock.className = 'grid-block';
 
-    const row = document.createElement("div");
-    row.className = "row";
+  const profilePic = document.createElement('div');
+  profilePic.className = 'profile-pic';
 
-    const senderCol = document.createElement("div");
-    senderCol.className = "col-md-2 sender-col min-vw-20";
+  const img = document.createElement('img');
+  img.src = 'tempphoto.png';
 
-    const img = document.createElement("img");
-    img.src = "tempphoto.png";
+  profilePic.appendChild(img);
 
-    const col = document.createElement("div");
-    col.className = "col-md-10";
+  const username = document.createElement('div');
+  username.className = 'username';
+  username.textContent = user.name;
 
-    const senderName = document.createElement("div");
-    senderName.className = "sender-name";
-    senderName.textContent = user.name;
-    console.log(user.Name)
+  const buttonsWrapper = document.createElement('div');
+  buttonsWrapper.className = 'buttons-wrapper';
 
-    const addButton = document.createElement("a");
-    addButton.href = ``;
-    addButton.className = "btn btn-primary";
-    addButton.textContent = "Добавить в друзья";
-    addButton.setAttribute("data-friend-id", user.id);
+  const link = document.createElement('a');
+  link.href = `chat/${user.id}`;
 
-    const writeButton = document.createElement("a");
-    writeButton.href = `/chat/${user.id}`;
-    writeButton.className = "btn btn-primary";
-    writeButton.textContent = "Написать";
+  const button = document.createElement('button');
+  button.className = 'btn btn-primary';
+  button.setAttribute('data-friend-id', user.id);
+  button.textContent = 'Добавить в друзья';
 
-    col.appendChild(senderName);
-    col.appendChild(addButton);
-    col.appendChild(writeButton);
+  link.appendChild(button);
+  buttonsWrapper.appendChild(link);
 
-    senderCol.appendChild(img);
+  gridBlock.appendChild(profilePic);
+  gridBlock.appendChild(username);
+  gridBlock.appendChild(buttonsWrapper);
 
-    row.appendChild(senderCol);
-    row.appendChild(col);
-
-    container.appendChild(row);
-
-    resultsContainer.appendChild(container);
+  container.appendChild(gridBlock);
+  resultsContainer.appendChild(container);
         });
 
          // Добавить обработчик события click к каждой кнопке
@@ -282,51 +358,45 @@ existingContainers.forEach((container) => {
     container.remove();
   });
   requests.forEach((user) => {
-    console.log(requests);
-    const container = document.createElement("div");
-    container.className = "container-fluid chat";
-    container.id = containerId;
+    const container = document.createElement('div');
+  container.className = 'container-fluid chat';
+  container.id = containerId;
 
-    const row = document.createElement("div");
-    row.className = "row";
+  const gridBlock = document.createElement('div');
+  gridBlock.className = 'grid-block';
 
-    const senderCol = document.createElement("div");
-    senderCol.className = "col-md-2 sender-col min-vw-20";
+  const profilePic = document.createElement('div');
+  profilePic.className = 'profile-pic';
 
-    const img = document.createElement("img");
-    img.src = "tempphoto.png";
+  const img = document.createElement('img');
+  img.src = 'tempphoto.png';
 
-    const col = document.createElement("div");
-    col.className = "col-md-10";
+  profilePic.appendChild(img);
 
-    const senderName = document.createElement("div");
-    senderName.className = "sender-name";
-    senderName.textContent = user.name;
-    console.log(user.Name)
+  const username = document.createElement('div');
+  username.className = 'username';
+  username.textContent = user.name;
 
-    const addButton = document.createElement("a");
-    addButton.href = ``;
-    addButton.className = "btn btn-primary";
-    addButton.textContent = "Добавить в друзья";
-    addButton.setAttribute("data-friend-id", user.id);
+  const buttonsWrapper = document.createElement('div');
+  buttonsWrapper.className = 'buttons-wrapper';
 
-    const writeButton = document.createElement("a");
-    writeButton.href = `/chat/${user.id}`;
-    writeButton.className = "btn btn-primary";
-    writeButton.textContent = "Написать";
+  const link = document.createElement('a');
+  link.href = `chat/${user.id}`;
 
-    col.appendChild(senderName);
-    col.appendChild(addButton);
-    col.appendChild(writeButton);
+  const button = document.createElement('button');
+  button.className = 'btn btn-primary';
+  button.setAttribute('data-friend-id', user.id);
+  button.textContent = 'Добавить в друзья';
 
-    senderCol.appendChild(img);
+  link.appendChild(button);
+  buttonsWrapper.appendChild(link);
 
-    row.appendChild(senderCol);
-    row.appendChild(col);
+  gridBlock.appendChild(profilePic);
+  gridBlock.appendChild(username);
+  gridBlock.appendChild(buttonsWrapper);
 
-    container.appendChild(row);
-
-    resultsContainer.appendChild(container);
+  container.appendChild(gridBlock);
+  resultsContainer.appendChild(container);
         });
 
          // Добавить обработчик события click к каждой кнопке
@@ -374,50 +444,45 @@ existingContainers.forEach((container) => {
   });
 
   userNames.forEach((user) => {
-    const container = document.createElement("div");
-    container.className = "container-fluid chat";
-    container.id = containerId;
+     const container = document.createElement('div');
+  container.className = 'container-fluid chat';
+container.id = containerId;
 
-    const row = document.createElement("div");
-    row.className = "row";
+  const gridBlock = document.createElement('div');
+  gridBlock.className = 'grid-block';
 
-    const senderCol = document.createElement("div");
-    senderCol.className = "col-md-2 sender-col min-vw-20";
+  const profilePic = document.createElement('div');
+  profilePic.className = 'profile-pic';
 
-    const img = document.createElement("img");
-    img.src = "tempphoto.png";
+  const img = document.createElement('img');
+  img.src = 'tempphoto.png';
 
-    const col = document.createElement("div");
-    col.className = "col-md-10";
+  profilePic.appendChild(img);
 
-    const senderName = document.createElement("div");
-    senderName.className = "sender-name";
-    senderName.textContent = user.name;
+  const username = document.createElement('div');
+  username.className = 'username';
+  username.textContent = user.name;
 
-    const addButton = document.createElement("a");
-    
-    addButton.className = "btn btn-primary";
+  const buttonsWrapper = document.createElement('div');
+  buttonsWrapper.className = 'buttons-wrapper';
 
-    addButton.textContent = "Добавить в друзья";
-    addButton.setAttribute("data-friend-id", user.id);
+  const link = document.createElement('a');
+  link.href = `chat/${user.id}`;
 
-    const writeButton = document.createElement("a");
-    writeButton.href = `/chat/${user.id}`;
-    writeButton.className = "btn btn-primary";
-    writeButton.textContent = "Написать";
+  const button = document.createElement('button');
+  button.className = 'btn btn-primary';
+  button.setAttribute('data-friend-id', user.id);
+  button.textContent = 'Добавить в друзья';
 
-    col.appendChild(senderName);
-    col.appendChild(addButton);
-    col.appendChild(writeButton);
+  link.appendChild(button);
+  buttonsWrapper.appendChild(link);
 
-    senderCol.appendChild(img);
+  gridBlock.appendChild(profilePic);
+  gridBlock.appendChild(username);
+  gridBlock.appendChild(buttonsWrapper);
 
-    row.appendChild(senderCol);
-    row.appendChild(col);
-
-    container.appendChild(row);
-
-    resultsContainer.appendChild(container);
+  container.appendChild(gridBlock);
+  resultsContainer.appendChild(container);
   });
   // Добавить обработчик события click к каждой кнопке
   const addFriendButtons = document.querySelectorAll(`#${containerId} .btn-primary[data-friend-id]`);
@@ -428,8 +493,7 @@ existingContainers.forEach((container) => {
       const friendId = this.getAttribute("data-friend-id");
       console.log(friendId);
 
-      // Выполнить действия, которые вам нужны при клике на кнопку
-      // Например, отправить запрос на сервер для добавления друга
+    
 
       // Пример запроса на сервер с использованием jQuery AJAX
       $.ajax({
