@@ -248,6 +248,40 @@ app.post("/add-friend/:friendId", function (req, res) {
   addFriends(req.session.userid, friendId);
 });
 
+app.post("/delete-friend/:friendId", async function (req, res) {
+  try {
+    // Извлечение идентификатора друга из параметров маршрута
+    const friendId = req.params.friendId;
+    const userId = req.session.userid;
+
+    // Поиск записей о друзьях для текущего пользователя и друга
+    const userFriends = await Friends.findOne({ userId: userId });
+    const friendFriends = await Friends.findOne({ userId: friendId });
+
+    // Проверка, существуют ли записи о друзьях для текущего пользователя и друга
+    if (userFriends && friendFriends) {
+      // Удаление друга из списков друзей
+      userFriends.friends.pull(friendId);
+      friendFriends.friends.pull(userId);
+
+      // Сохранение изменений
+      await userFriends.save();
+      await friendFriends.save();
+
+      console.log("Друг успешно удален из списка друзей.");
+
+      res.status(200).send("Друг успешно удален из списка друзей.");
+    } else {
+      console.log("Записи о друзьях не найдены.");
+
+      res.status(404).send("Записи о друзьях не найдены.");
+    }
+  } catch (error) {
+    console.error("Ошибка при удалении друга:", error);
+    res.status(500).send("Ошибка при удалении друга.");
+  }
+});
+
 app.get("/registration", function (req, res) {
   res.render("registration", {
     error: "",
@@ -373,7 +407,7 @@ io.on("connection", function (socket) {
     session: socket.request.session,
     socketId: socket.id,
   };
-
+  console.log(sessionStore);
   socket.on("disconnect", function (reason) {
     console.log("User 1 disconnected because " + reason);
     connections.splice(connections.indexOf(socket), 1);

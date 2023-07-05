@@ -94,6 +94,14 @@
   .buttons-wrapper{
     grid-column: 2;
   grid-row:2;
+
+  }
+  .buttons-wrapper a{
+    margin-right: 5px;
+  
+  }
+  .container-fluid a:hover{
+    text-decoration: none;
   }
   
 
@@ -196,6 +204,13 @@
                     Написать
                   </button>
                 </a>
+                <button
+                    class="btn btn-warning"
+                    id="delete-friend"
+                    data-friend-id="<%= friend.id %>"
+                  >
+                    Удалить из друзей
+                  </button>
               </div>
             </div>
             </div>
@@ -264,6 +279,22 @@ existingContainers.forEach((container) => {
   });
         });
 
+      $("#delete-friend").click(function() {
+  var friendId = $(this).data("friend-id");
+  var container = $(this).closest(".container-fluid.chat"); // Сохраняем ссылку на контейнер
+
+  $.ajax({
+    url: `/delete-friend/${friendId}`,
+    method: "POST",
+    success: function(response) {
+      console.log("Success");
+      container.hide(); // Используем сохраненную ссылку на контейнер
+    },
+    error: function(error) {
+      console.log("Error:", error);
+    },
+  });
+});
         socket.on("friendRequests", (requests) => {
 // Удаление существующих контейнеров с указанным идентификатором
   const containerId = "search-results";
@@ -296,15 +327,23 @@ container.id = containerId;
   buttonsWrapper.className = 'buttons-wrapper';
 
   const link = document.createElement('a');
-  link.href = `chat/${user.id}`;
+   const link2 = document.createElement('a');
 
   const button = document.createElement('button');
   button.className = 'btn btn-primary';
   button.setAttribute('data-friend-id', user.id);
   button.textContent = 'Добавить в друзья';
+  
+ const button2 = document.createElement('button');
+  button2.className = 'btn btn-warning';
+  button2.setAttribute('data-friend-id', user.id);
+  button2.textContent = 'Отклонить';
+ 
 
   link.appendChild(button);
+  link2.appendChild(button2);
   buttonsWrapper.appendChild(link);
+  buttonsWrapper.appendChild(link2);
 
   gridBlock.appendChild(profilePic);
   gridBlock.appendChild(username);
@@ -313,7 +352,7 @@ container.id = containerId;
   container.appendChild(gridBlock);
   resultsContainer.appendChild(container);
         });
-
+т
          // Добавить обработчик события click к каждой кнопке
   const addFriendButtons = document.querySelectorAll(`#${containerId} .btn-primary[data-friend-id]`);
   addFriendButtons.forEach((button) => {
