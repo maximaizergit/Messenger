@@ -224,7 +224,7 @@
         // Обработка клика на кнопку "Отправить"
         $("#send-button").click(function () {
           // Получение введенного сообщения из инпута
-          var message = $("#message-input").val();
+          let message = $("#message-input").val();
 
           // Отправка сообщения на сервер или выполнение необходимых действий
           sendMessage(message, userId);
@@ -249,11 +249,11 @@
         // Создание контейнера сообщения
         const messageContainer = document.createElement("div");
         messageContainer.classList.add("message");
-
+        console.log(message);
         messageContainer.classList.add(
           message.userId === userId ? "right" : "left"
         );
-        console.log(userId + "///" + message.senderId);
+        console.log(userId + "///" + message.userId);
         // Создание блока облачка с именем отправителя
         const senderContainer = document.createElement("div");
         senderContainer.classList.add("sender");
@@ -281,8 +281,11 @@
         chatContainer.scrollTop = chatContainer.scrollHeight;
         console.log("New message:", message);
       });
+      socket.on("connect", () => {
+        console.log("Установлено соединение с сервером");
 
-      socket.emit("joinRoom", chatId);
+        socket.emit("joinRoom", chatId);
+      });
 
       const chatContainer = document.getElementById("chat-container");
 
@@ -291,7 +294,7 @@
 
       const chatWrapper = document.querySelector(".chat-wrapper");
       const mediaQuery = window.matchMedia("(max-width: 1150px)");
-      const inputBlock = window.querySelector(".input-block");
+      const inputBlock = document.querySelector(".input-block");
       function handleMediaQuery(event) {
         if (event.matches) {
           chatWrapper.classList.remove("col-md-5");
@@ -301,8 +304,8 @@
         } else {
           chatWrapper.classList.remove("col-md-12");
           chatWrapper.classList.add("col-md-5");
-          inputBlock.classList.remove("col-md-5");
-          inputBlock.classList.add("col-md-12");
+          inputBlock.classList.remove("col-md-12");
+          inputBlock.classList.add("col-md-5");
         }
       }
       mediaQuery.addEventListener("change", handleMediaQuery);

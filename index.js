@@ -9,26 +9,32 @@ const io = new Server(server);
 const User = require("./models/user.js");
 const Friends = require("./models/friends.js");
 const { Chat, Message } = require("./models/chat-and-messages");
-const sessions = require("express-session");
-const sharedSession = require("express-socket.io-session");
+const session = require("express-session");
+var MongoDBStore = require("connect-mongodb-session")(session);
 
-var session;
 app.set("view engine", "ejs");
 const db =
   "mongodb+srv://maxim17shiglov08:3BEItGsZzPKiZQ8M@users.rqhyfy5.mongodb.net/?retryWrites=true&w=majority";
 app.use(express.static(path.resolve(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+var store = new MongoDBStore({
+  uri: "mongodb+srv://maxim17shiglov08:3BEItGsZzPKiZQ8M@users.rqhyfy5.mongodb.net/?retryWrites=true&w=majority",
+  collection: "sessions",
+});
+// Catch errors
+store.on("error", function (error) {
+  console.log(error);
+});
 const oneDay = 1000 * 60 * 60 * 24;
-const sessionMiddleware = sessions({
+
+const sessionMiddleware = session({
   secret: "d0d96651c9fffb09106a3b648cdcb84b4e03707c17927fc76004536daac06d7a",
-  saveUninitialized: true,
-  cookie: { maxAge: oneDay },
   resave: false,
+  saveUninitialized: false,
+  store: store,
 });
 app.use(sessionMiddleware);
-
 io.use((socket, next) => {
   sessionMiddleware(socket.request, socket.request.res, next);
 });
@@ -126,8 +132,7 @@ app.post("/login", async (req, res, next) => {
       });
     }
 
-    session = req.session;
-    session.userid = user.id;
+    req.session.userid = user.id;
     console.log(req.session);
     // Редирект на защищенную страницу или другую страницу при успешной аутентификации
     res.redirect("/");
@@ -394,25 +399,35 @@ server.listen(PORT, () => {
   console.log("listening on *:" + PORT);
 });
 
+const getSessionFromDatabase = async (userId) => {
+  try {
+    const session = await Session.findOne({ userId });
+    return session;
+  } catch (error) {
+    console.error("Error retrieving session from database:", error);
+    return null;
+  }
+};
+
 users = [];
 connections = [];
-const sessionStore = {};
+const activeSessions = {};
 
 io.on("connection", function (socket) {
   console.log("Успешное соединение");
-
-  connections.push(socket);
   const userId = socket.request.session.userid;
-  sessionStore[userId] = {
-    session: socket.request.session,
-    socketId: socket.id,
-  };
-  console.log(sessionStore);
+  activeSessions[userId] = socket.id;
+  console.log(activeSessions);
+  connections.push(socket);
+
+  console.log("User ID:", socket.request.session.userid);
+
+  console.log("connected to socket");
   socket.on("disconnect", function (reason) {
     console.log("User 1 disconnected because " + reason);
     connections.splice(connections.indexOf(socket), 1);
     // Удаление пользователя из хранилища
-    delete sessionStore[userId];
+    delete activeSessions[userId];
   });
   socket.on("getRequests", async function () {
     try {
@@ -508,13 +523,12 @@ io.on("connection", function (socket) {
       // Получить список участников чата
       const participants = chat.participants;
       console.log("notifying...");
-      // Отправить уведомление только участникам чата, кроме отправителя
       participants.forEach((participantId) => {
         if (participantId !== message.userId) {
-          const session = sessionStore[participantId];
+          const socketId = activeSessions[participantId];
 
-          if (session) {
-            io.to(session.socketId).emit("notification", message);
+          if (socketId) {
+            io.to(socketId).emit("notification", message);
             console.log("Notifying user..." + participantId);
           }
         }
